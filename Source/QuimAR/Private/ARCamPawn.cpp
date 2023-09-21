@@ -7,6 +7,14 @@
 #include "Element.h"
 #include "ARBDSubsystem.h"
 #include "Camera/CameraComponent.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include <Kismet/KismetRenderingLibrary.h>
+//#include "Engine/TextureRenderTarget2D.h"
+//#include "TextureResource.h"
+
+
+USceneCaptureComponent2D* mainCapture = nullptr;
+UTextureRenderTarget2D* RenderTarget = nullptr;
 
 // Sets default values
 AARCamPawn::AARCamPawn()
@@ -21,6 +29,13 @@ void AARCamPawn::BeginPlay()
 	Super::BeginPlay();
 	UARSessionConfig* ARSessionConfig = UARBlueprintLibrary::GetSessionConfig();
 	UARBlueprintLibrary::StartARSession(ARSessionConfig);	
+
+	mainCapture = FindComponentByClass<USceneCaptureComponent2D>();
+	mainCapture->bCaptureEveryFrame = false;
+	mainCapture->bAlwaysPersistRenderingState = true;
+	mainCapture->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
+
+	mainCapture->TextureTarget = UKismetRenderingLibrary::CreateRenderTarget2D(this, 512, 512, ETextureRenderTargetFormat::RTF_RGBA16f);
 }
 
 void AARCamPawn::AddElementOnScene(FString symbol)
@@ -46,6 +61,28 @@ void AARCamPawn::AddElementOnScene(FString symbol)
 			DynMaterial->SetVectorParameterValue("Param", ele->elementColor); 
 			Mesh->SetMaterial(0, DynMaterial);
 		}
+	}
+}
+
+void AARCamPawn::GetGameImage()
+{
+	mainCapture->CaptureScene();
+	RenderTarget = mainCapture->TextureTarget;
+
+	if (RenderTarget)
+	{
+		FTextureRenderTargetResource* RTResource = RenderTarget->GameThread_GetRenderTargetResource();
+		if (RTResource)
+		{
+			TArray<FColor> Pixels;
+			RTResource->ReadPixels(Pixels);
+
+			FString Filename = FString("12YourScreenshotGame.png");
+			FString FilePath = FPaths::ScreenShotDir() + TEXT("/") + Filename;
+			FFileHelper::CreateBitmap(*FilePath, RTResource->GetSizeX(), RTResource->GetSizeY(), Pixels.GetData());
+			UE_LOG(LogTemp, Warning, TEXT("Screenshot saved to %s"), *FilePath);
+		}
+
 	}
 }
 

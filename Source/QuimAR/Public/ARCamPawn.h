@@ -21,6 +21,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ElementsCategory")
 	void AddElementOnScene(FString symbol);
 
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CaptureCategory")
+	//UTextureRenderTarget2D* RenderTarget;
+
+	UFUNCTION(BlueprintCallable, Category = "ElementsCategory")
+	void GetGameImage();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
