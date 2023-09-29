@@ -2,10 +2,13 @@
 
 
 #include "ARBDSubsystem.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/GridPanel.h"
+#include "ElementsSelectionUserWidget.h"
 
 UARBDSubsystem::UARBDSubsystem()
 {
-	FLinearColor MyColor(0.5, 0.2, 0.8, 1.0);
+	//FLinearColor MyColor(0.5, 0.2, 0.8, 1.0);
 
 	elements.Add(new Element("Oxigenio", "O", 15.9994, 8, FLinearColor(1, 0, 0), ElementGroupEnum::NAO_METAL));
 	elements.Add(new Element("Hidrogenio", "H", 1.00794, 1, FLinearColor(0, 0.75, 1), ElementGroupEnum::NAO_METAL));
@@ -23,4 +26,14 @@ Element* UARBDSubsystem::GetElement(FString symbol)
 			return elements[i];
 	}
 	return NULL;
+}
+
+Element* UARBDSubsystem::GetElement(int index)
+{
+	return elements[index];
+}
+
+int UARBDSubsystem::ElementArraySize()
+{
+	return elements.Num();
 }

@@ -39,6 +39,8 @@ class QUIMAR_API UARBDSubsystem : public UGameInstanceSubsystem
 	public:
 		UARBDSubsystem();
 		Element* GetElement(FString symbol);
+		Element* GetElement(int index);
+		int ElementArraySize();
 
 	protected:
 		TArray<Element*> elements;

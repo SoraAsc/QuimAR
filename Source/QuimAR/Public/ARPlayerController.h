@@ -13,5 +13,4 @@ UCLASS()
 class QUIMAR_API AARPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
 };

@@ -9,6 +9,9 @@
 #include "Camera/CameraComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include <Kismet/KismetRenderingLibrary.h>
+#include "Blueprint/UserWidget.h"
+//#include <tesseract/baseapi.h>
+//#include <leptonica/allheaders.h>
 //#include "Engine/TextureRenderTarget2D.h"
 //#include "TextureResource.h"
 
@@ -27,6 +30,10 @@ AARCamPawn::AARCamPawn()
 void AARCamPawn::BeginPlay()
 {
 	Super::BeginPlay();
+	if (elementsSelectGUI)
+	{
+		elementsSelectGUI->AddToViewport(0);
+	}
 	UARSessionConfig* ARSessionConfig = UARBlueprintLibrary::GetSessionConfig();
 	UARBlueprintLibrary::StartARSession(ARSessionConfig);	
 
@@ -82,6 +89,10 @@ void AARCamPawn::GetGameImage()
 			FFileHelper::CreateBitmap(*FilePath, RTResource->GetSizeX(), RTResource->GetSizeY(), Pixels.GetData());
 			UE_LOG(LogTemp, Warning, TEXT("Screenshot saved to %s"), *FilePath);
 		}
+		//tesseract::TessBaseAPI *tess = new tesseract::TessBaseAPI();
+		//tess->Init(NULL, "eng");
+		//if (tess.Init(nullptr, "eng", tesseract::OEM_DEFAULT) != 0)
+		//	return;
 
 	}
 }

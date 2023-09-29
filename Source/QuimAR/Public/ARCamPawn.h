@@ -18,6 +18,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ElementsCategory")
 	TSubclassOf<class AElement> elementToSpawn;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Category = "ElementsCategory")
+	UUserWidget* elementsSelectGUI;
+
 	UFUNCTION(BlueprintCallable, Category = "ElementsCategory")
 	void AddElementOnScene(FString symbol);
 
