@@ -23,8 +23,6 @@ public:
 	TSubclassOf<class UUserWidget> elementsToShowOnGUI;
 
 	void LoadAllEmentsOnGUI();
-	UFUNCTION()
-	void HandleElementClick();
 
 protected:
 	virtual void NativeConstruct() override;

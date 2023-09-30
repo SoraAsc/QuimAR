@@ -16,5 +16,9 @@ class QUIMAR_API UAddElementButton : public UButton
 
 public:
 	FString elementSymbol;
+	UFUNCTION()
+	void ConfigureButton();
+	UFUNCTION()
+	void OnClick();
 	
 };

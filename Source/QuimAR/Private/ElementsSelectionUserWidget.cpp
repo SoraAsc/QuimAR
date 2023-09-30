@@ -30,19 +30,11 @@ void UElementsSelectionUserWidget::LoadAllEmentsOnGUI()
 
 			UAddElementButton* btn = Cast<UAddElementButton>(widget->GetWidgetFromName(TEXT("btnPlaceElement")));
 
-			btn->OnClicked.AddDynamic(this, &UElementsSelectionUserWidget::HandleElementClick);
+			btn->elementSymbol = ele->symbol;
+			btn->ConfigureButton();
 
 			widget->SetPadding(FMargin(20.0f, 20.0f, 0, 0));
 			grid->AddChildToGrid(widget, 0, i);
 		}
-	}
-}
-
-void UElementsSelectionUserWidget::HandleElementClick()
-{
-	AARCamPawn* pawn = GetWorld()->GetFirstPlayerController()->GetPawn<AARCamPawn>();
-	if (pawn)
-	{
-		pawn->AddElementOnScene("Cl");
 	}
 }

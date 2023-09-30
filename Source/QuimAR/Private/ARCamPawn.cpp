@@ -93,7 +93,6 @@ void AARCamPawn::GetGameImage()
 		//tess->Init(NULL, "eng");
 		//if (tess.Init(nullptr, "eng", tesseract::OEM_DEFAULT) != 0)
 		//	return;
-
 	}
 }
 
