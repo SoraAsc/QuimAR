@@ -38,3 +38,27 @@ void UElementsSelectionUserWidget::LoadAllEmentsOnGUI()
 		}
 	}
 }
+
+void UElementsSelectionUserWidget::ShowPlaceButton()
+{
+	UWidget* placeButton = GetWidgetFromName(TEXT("Place_Element_Button"));
+	placeButton->SetVisibility(ESlateVisibility::Visible);
+	placeButtonIsActived = true;
+}
+
+void UElementsSelectionUserWidget::HiddenPlaceButton()
+{
+	UWidget* placeButton = GetWidgetFromName(TEXT("Place_Element_Button"));
+	placeButton->SetVisibility(ESlateVisibility::Hidden);
+	placeButtonIsActived = false;
+}
+
+bool UElementsSelectionUserWidget::GetPlaceButtonVisibilityState()
+{
+	return placeButtonIsActived;
+}
+
+bool UElementsSelectionUserWidget::GetUIActivedVisibilityState()
+{
+	return isUIActived;
+}

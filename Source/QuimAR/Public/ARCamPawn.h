@@ -4,12 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "ARBlueprintLibrary.h"
+#include "ElementsSelectionUserWidget.h"
 #include "ARCamPawn.generated.h"
 
 UCLASS()
 class QUIMAR_API AARCamPawn : public APawn
 {
 	GENERATED_BODY()
+
+protected:
+	AActor* spawnedPlane;
+	bool UpdatePlaneCandidate();
+	bool CreatePlaneCandidate(UARTrackedGeometry* geo, UARPlaneGeometry* plane);
 
 public:
 	// Sets default values for this pawn's properties
@@ -18,14 +25,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ElementsCategory")
 	TSubclassOf<class AElement> elementToSpawn;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ElementsCategory")
+	TSubclassOf<class AActor> planeToSpawn;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Instanced, Category = "ElementsCategory")
-	UUserWidget* elementsSelectGUI;
+	UElementsSelectionUserWidget* elementsSelectGUI;
 
 	UFUNCTION(BlueprintCallable, Category = "ElementsCategory")
 	void AddElementOnScene(FString symbol);
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CaptureCategory")
-	//UTextureRenderTarget2D* RenderTarget;
 
 	UFUNCTION(BlueprintCallable, Category = "ElementsCategory")
 	void GetGameImage();

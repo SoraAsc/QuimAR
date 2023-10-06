@@ -24,7 +24,17 @@ public:
 
 	void LoadAllEmentsOnGUI();
 
+	void ShowPlaceButton();
+	void HiddenPlaceButton();
+
+	bool GetPlaceButtonVisibilityState();
+	bool GetUIActivedVisibilityState();
+
 protected:
 	virtual void NativeConstruct() override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool placeButtonIsActived = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool isUIActived;
 	
 };

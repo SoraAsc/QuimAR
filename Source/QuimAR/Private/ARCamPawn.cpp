@@ -10,10 +10,6 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include <Kismet/KismetRenderingLibrary.h>
 #include "Blueprint/UserWidget.h"
-//#include <tesseract/baseapi.h>
-//#include <leptonica/allheaders.h>
-//#include "Engine/TextureRenderTarget2D.h"
-//#include "TextureResource.h"
 
 
 USceneCaptureComponent2D* mainCapture = nullptr;
@@ -45,6 +41,37 @@ void AARCamPawn::BeginPlay()
 	mainCapture->TextureTarget = UKismetRenderingLibrary::CreateRenderTarget2D(this, 512, 512, ETextureRenderTargetFormat::RTF_RGBA16f);
 }
 
+
+bool AARCamPawn::UpdatePlaneCandidate()
+{
+	int32 viX, viY;
+	GetWorld()->GetFirstPlayerController()->GetViewportSize(viX, viY);
+	FVector2D screenPos(viX / 2.0f, viY / 2.0f);
+	TArray<FARTraceResult> trackedResults = UARBlueprintLibrary::LineTraceTrackedObjects(screenPos, false, false, true, true);
+	if (!trackedResults.IsEmpty())
+	{
+		FARTraceResult trackedObject = trackedResults[0];
+
+		return CreatePlaneCandidate(trackedObject.GetTrackedGeometry(), Cast<UARPlaneGeometry>(trackedObject.GetTrackedGeometry()));
+	}
+	return false;
+}
+
+bool AARCamPawn::CreatePlaneCandidate(UARTrackedGeometry* geo, UARPlaneGeometry* plane)
+{
+	if(spawnedPlane != nullptr && spawnedPlane->IsValidLowLevel())
+		GetWorld()->DestroyActor(spawnedPlane);
+	spawnedPlane = GetWorld()->SpawnActor(planeToSpawn);
+	spawnedPlane->SetActorLocation(plane->GetLocalToWorldTransform().GetLocation());
+
+	FVector planeForward = plane->GetLocalToWorldTransform().GetRotation().GetUpVector();
+
+	spawnedPlane->SetActorRotation(planeForward.Rotation());
+	
+	spawnedPlane->SetActorScale3D((plane->GetExtent() / 80.0f) * FVector(1,1,0) + FVector::UpVector);
+	return true;
+}
+
 void AARCamPawn::AddElementOnScene(FString symbol)
 {
 	UARBDSubsystem* ARGameInstance = GetGameInstance()->GetSubsystem<UARBDSubsystem>();
@@ -59,14 +86,17 @@ void AARCamPawn::AddElementOnScene(FString symbol)
 		FVector SpawnLocation = CameraTransform.GetLocation() + CameraForward * 20;
 		FRotator SpawnRotation = FRotationMatrix::MakeFromX(CameraForward).Rotator();
 
-		AElement* element = GetWorld()->SpawnActor<AElement>(elementToSpawn, SpawnLocation, SpawnRotation);
-		UMeshComponent* Mesh = element->FindComponentByClass<UMeshComponent>();
-		UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(Mesh->GetMaterial(0), this);
-
-		if (DynMaterial)
+		if (spawnedPlane)
 		{
-			DynMaterial->SetVectorParameterValue("Param", ele->elementColor); 
-			Mesh->SetMaterial(0, DynMaterial);
+			AElement* element = GetWorld()->SpawnActor<AElement>(elementToSpawn, SpawnLocation, SpawnRotation);
+			UMeshComponent* Mesh = element->FindComponentByClass<UMeshComponent>();
+			UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(Mesh->GetMaterial(0), this);
+
+			if (DynMaterial)
+			{
+				DynMaterial->SetVectorParameterValue("Param", ele->elementColor);
+				Mesh->SetMaterial(0, DynMaterial);
+			}
 		}
 	}
 }
@@ -89,10 +119,6 @@ void AARCamPawn::GetGameImage()
 			FFileHelper::CreateBitmap(*FilePath, RTResource->GetSizeX(), RTResource->GetSizeY(), Pixels.GetData());
 			UE_LOG(LogTemp, Warning, TEXT("Screenshot saved to %s"), *FilePath);
 		}
-		//tesseract::TessBaseAPI *tess = new tesseract::TessBaseAPI();
-		//tess->Init(NULL, "eng");
-		//if (tess.Init(nullptr, "eng", tesseract::OEM_DEFAULT) != 0)
-		//	return;
 	}
 }
 
@@ -100,12 +126,22 @@ void AARCamPawn::GetGameImage()
 void AARCamPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	TArray<UARTrackedGeometry*> allARGeometries = UARBlueprintLibrary::GetAllGeometries();
+	bool planeExist = UpdatePlaneCandidate();
+	if (!elementsSelectGUI->GetUIActivedVisibilityState() && planeExist && !elementsSelectGUI->GetPlaceButtonVisibilityState())
+		elementsSelectGUI->ShowPlaceButton();
+	else if(elementsSelectGUI->GetPlaceButtonVisibilityState() && !planeExist)
+		elementsSelectGUI->HiddenPlaceButton();
+	//UpdatePlaneCandidate();
 
-	for (UARTrackedGeometry* Geometry : allARGeometries)
-	{
-		Geometry->DebugDraw(GetWorld(), FLinearColor::Red, 5.0, 0.0);
-	}
+
+	//trackedObject.GetTrackedGeometry();
+
+	//TArray<UARTrackedGeometry*> allARGeometries = UARBlueprintLibrary::GetAllGeometries();
+
+	//for (UARTrackedGeometry* Geometry : allARGeometries)
+	//{
+	//	Geometry->DebugDraw(GetWorld(), FLinearColor::Red, 5.0, 0.0);
+	//}
 }
 
 // Called to bind functionality to input
