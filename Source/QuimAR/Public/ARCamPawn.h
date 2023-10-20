@@ -15,6 +15,8 @@ class QUIMAR_API AARCamPawn : public APawn
 
 protected:
 	AActor* spawnedPlane;
+	UARTrackedGeometry* geometryOfSpawnedPlane;
+	TMap<UARTrackedGeometry*, AActor*> trackedObjectActorMap;
 	bool UpdatePlaneCandidate();
 	bool CreatePlaneCandidate(UARTrackedGeometry* geo, UARPlaneGeometry* plane);
 

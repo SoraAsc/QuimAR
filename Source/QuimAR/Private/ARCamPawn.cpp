@@ -9,6 +9,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include <Kismet/KismetRenderingLibrary.h>
+#include <leptonica/allheaders.h>
+#include <tesseract/baseapi.h>
 #include "Blueprint/UserWidget.h"
 
 
@@ -61,10 +63,12 @@ bool AARCamPawn::CreatePlaneCandidate(UARTrackedGeometry* geo, UARPlaneGeometry*
 {
 	if(spawnedPlane != nullptr && spawnedPlane->IsValidLowLevel())
 		GetWorld()->DestroyActor(spawnedPlane);
+
 	spawnedPlane = GetWorld()->SpawnActor(planeToSpawn);
+	geometryOfSpawnedPlane = geo;
 	spawnedPlane->SetActorLocation(plane->GetLocalToWorldTransform().GetLocation());
 
-	FVector planeForward = plane->GetLocalToWorldTransform().GetRotation().GetUpVector();
+	FVector planeForward = plane->GetLocalToWorldTransform().GetRotation().GetForwardVector();
 
 	spawnedPlane->SetActorRotation(planeForward.Rotation());
 	
@@ -83,12 +87,16 @@ void AARCamPawn::AddElementOnScene(FString symbol)
 		FTransform CameraTransform = Camera->GetComponentTransform();
 		FVector CameraForward = CameraTransform.GetUnitAxis(EAxis::X);
 
-		FVector SpawnLocation = CameraTransform.GetLocation() + CameraForward * 20;
+		//FVector SpawnLocationCamera = CameraTransform.GetLocation() + CameraForward * 20;
 		FRotator SpawnRotation = FRotationMatrix::MakeFromX(CameraForward).Rotator();
 
 		if (spawnedPlane)
 		{
-			AElement* element = GetWorld()->SpawnActor<AElement>(elementToSpawn, SpawnLocation, SpawnRotation);
+			FVector SpawnLocationPlane = spawnedPlane->GetActorLocation();
+			//FVector cameraToPlane = SpawnLocationPlane - SpawnLocationCamera;
+			//cameraToPlane.Normalize();
+			AElement* element = GetWorld()->SpawnActor<AElement>(elementToSpawn, SpawnLocationPlane, SpawnRotation);
+			trackedObjectActorMap.Add(geometryOfSpawnedPlane, element);
 			UMeshComponent* Mesh = element->FindComponentByClass<UMeshComponent>();
 			UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(Mesh->GetMaterial(0), this);
 
@@ -118,6 +126,30 @@ void AARCamPawn::GetGameImage()
 			FString FilePath = FPaths::ScreenShotDir() + TEXT("/") + Filename;
 			FFileHelper::CreateBitmap(*FilePath, RTResource->GetSizeX(), RTResource->GetSizeY(), Pixels.GetData());
 			UE_LOG(LogTemp, Warning, TEXT("Screenshot saved to %s"), *FilePath);
+
+			tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();
+			//if (api->Init("F:\\Projects\\Unreal Projects\\QuimAR\\Source\\QuimAR\\OCR\\tessdata", "eng"))
+			if (api->Init(NULL, "eng"))
+			{
+				fprintf(stderr, "");
+			}
+			// Open input image with leptonica library
+			//Pix* image = pixRead("/usr/src/tesseract/testing/phototest.tif");
+			//Pix* image = pixRead("F:\\Projects\\Unreal Projects\\QuimAR\\Saved\\Screenshots\\WindowsEditor\\OCoracaoDoHomem.png");
+			char* result = TCHAR_TO_ANSI(*FilePath);
+			Pix* image = pixRead(result);
+			api->SetImage(image);
+			// Get OCR result
+			char* outText = api->GetUTF8Text();
+			//printf("OCR output:\n%s", outText);
+
+			// Destroy used object and release memory
+			api->End();
+			//delete api;
+			FString recognizedText = FString(outText);
+			UE_LOG(LogTemp, Warning, TEXT("OCR output:\n%s"), *recognizedText);
+			//delete[] outText;
+			pixDestroy(&image);
 		}
 	}
 }
@@ -131,8 +163,19 @@ void AARCamPawn::Tick(float DeltaTime)
 		elementsSelectGUI->ShowPlaceButton();
 	else if(elementsSelectGUI->GetPlaceButtonVisibilityState() && !planeExist)
 		elementsSelectGUI->HiddenPlaceButton();
-	//UpdatePlaneCandidate();
 
+	TArray<UARTrackedGeometry*> allARGeometries = UARBlueprintLibrary::GetAllGeometries();
+	for (UARTrackedGeometry* Geometry : allARGeometries)
+	{
+		AActor* trackedElement = trackedObjectActorMap.FindRef(Geometry);
+		if (trackedElement)
+		{
+			trackedElement->SetActorLocation(Geometry->GetLocalToWorldTransform().GetLocation());
+			trackedElement->SetActorRotation(Geometry->GetLocalToWorldTransform().GetRotation());
+		}
+		Geometry->DebugDraw(GetWorld(), FLinearColor::Red, 5.0, 0.0);
+	}
+	//UpdatePlaneCandidate();
 
 	//trackedObject.GetTrackedGeometry();
 

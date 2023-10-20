@@ -20,9 +20,10 @@ void UElementsSelectionUserWidget::LoadAllEmentsOnGUI()
 	if (grid)
 	{
 		int n = ARGameInstance->ElementArraySize();
-		for (int i = 0; i < n; i++)
+		int j = 0, i = 0, cont = 0;
+		while (cont < n)
 		{
-			Element* ele = ARGameInstance->GetElement(i);
+			Element* ele = ARGameInstance->GetElement(cont);
 			UUserWidget* widget = CreateWidget(this, elementsToShowOnGUI);
 
 			UWidget* genericText = widget->GetWidgetFromName(TEXT("elementName"));
@@ -33,8 +34,12 @@ void UElementsSelectionUserWidget::LoadAllEmentsOnGUI()
 			btn->elementSymbol = ele->symbol;
 			btn->ConfigureButton();
 
-			widget->SetPadding(FMargin(20.0f, 20.0f, 0, 0));
-			grid->AddChildToGrid(widget, 0, i);
+			widget->SetPadding(FMargin(20.0f, 35.0f, 0, 0));
+
+			if (i % 7 == 0) { j += 1; i = 0; }
+			grid->AddChildToGrid(widget, j, i);
+			i++;
+			cont++;
 		}
 	}
 }

@@ -1,0 +1,12 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${prefix}/lib/x86_64-linux-gnu
+includedir=${prefix}/include/leptonica
+
+Name: leptonica
+Description: An open source C library for efficient image processing and image analysis operations
+Version: 1.82.0
+Libs: -L${libdir} -llept
+Libs.private: -lz -lpng16 -lz -L/build/libjpeg-turbo-E3Jd2Q/libjpeg-turbo-2.1.1/obj-x86_64-linux-gnu/lib/x86_64-linux-gnu -ljpeg -lopenjp2 -lgif -ltiff -lwebp -lwebpmux -lwebp
+Cflags: -I${includedir}
+
